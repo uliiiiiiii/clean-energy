@@ -1,8 +1,16 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import type { Payload } from 'recharts/types/component/DefaultLegendContent';
 import { DailyEnergyMix, ENERGY_SOURCE_COLORS, ENERGY_SOURCE_LABELS, CLEAN_ENERGY_SOURCES } from '@/types';
 import styles from './EnergyPieChart.module.css';
+
+interface ChartDataItem {
+  name: string;
+  value: number;
+  label: string;
+  isClean: boolean;
+}
 
 interface EnergyPieChartProps {
   data: DailyEnergyMix;
@@ -49,23 +57,26 @@ export default function EnergyPieChart({ data, dayLabel }: EnergyPieChartProps) 
     return null;
   };
 
-  const renderLegend = ({ payload }: { payload?: Array<{ value: string; color: string; payload: { isClean: boolean } }> }) => {
+  const renderLegend = ({ payload }: { payload?: Payload[] }) => {
     if (!payload) return null;
     
     return (
       <div className={styles.legend}>
-        {payload.map((entry, index) => (
-          <div key={index} className={styles.legendItem}>
-            <span 
-              className={styles.legendDot}
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className={styles.legendLabel}>
-              {ENERGY_SOURCE_LABELS[entry.value] || entry.value}
-            </span>
-            {entry.payload.isClean && <span className={styles.legendClean}>♻️</span>}
-          </div>
-        ))}
+        {payload.map((entry, index) => {
+          const dataItem = entry.payload as ChartDataItem | undefined;
+          return (
+            <div key={index} className={styles.legendItem}>
+              <span 
+                className={styles.legendDot}
+                style={{ backgroundColor: entry.color || '#95A5A6' }}
+              />
+              <span className={styles.legendLabel}>
+                {ENERGY_SOURCE_LABELS[entry.value as string] || entry.value}
+              </span>
+              {dataItem?.isClean && <span className={styles.legendClean}>♻️</span>}
+            </div>
+          );
+        })}
       </div>
     );
   };
